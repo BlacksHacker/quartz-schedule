@@ -1,0 +1,78 @@
+
+spring:
+  application:
+    name: app-schedule-service
+logging:
+  level:
+    root: INFO
+    org.hibernate: INFO
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.type.descriptor.sql.BasicExtractor: TRACE
+    com.springms: DEBUG
+---
+server:
+  port: 8089
+feign:
+  hystrix:
+    enabled: true
+spring:
+  profiles: local
+  cloud:
+    nacos:
+      config:
+        server-addr: localhost:8848
+        file-extension: yaml
+        group: tcloud-base
+      discovery:
+        server-addr: localhost:8848
+  datasource:
+    druid:
+#      business:
+#        driver-class-name: com.mysql.jdbc.Driver
+#        url: jdbc:mysql://localhost:3306/apppush?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=GMT
+#        username: root
+#        password: root
+      quartz:
+        driver-class-name: com.mysql.jdbc.Driver
+        url: jdbc:mysql://localhost:3306/quartz?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=GMT
+        username: root
+        password: root
+    type: com.alibaba.druid.pool.DruidDataSource
+  quartz:
+    jdbc:
+      initialize-schema: never
+    job-store-type: jdbc
+    properties:
+      org:
+        quartz:
+          scheduler:
+            # 实例名称
+            instanceName: clusteredScheduler
+            # 定时任务实例编号，AUTO表示自动生成
+            instanceId: AUTO
+          jobStore:
+            # 持久化方式配置
+            class: org.quartz.impl.jdbcjobstore.JobStoreTX
+            #数据源配置
+            dataSource: quartz
+            #持久化方式配置数据驱动，Mysql数据库
+            driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+            #数据表前缀
+            tablePrefix: QRTZ_
+            # 为true，框架调用ClusterManager来初始化分布式节点，定时任务的分布式配置
+            isClustered: true
+            # 分布式节点检查间隔时间 单位 毫秒
+            clusterCheckinInterval: 10000
+            #配置是否使用
+            useProperties: false
+          threadPool:
+            #线程池实现类
+            class: org.quartz.simpl.SimpleThreadPool
+            #最大并发线程数量
+            threadCount: 10
+            #线程优先级
+            threadPriority: 5
+            #启动是否自动加载数据库内的定时任务，默认true
+            threadsInheritContextClassLoaderOfInitializingThread: true
+
+---
